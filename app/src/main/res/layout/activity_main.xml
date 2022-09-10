@@ -77,6 +77,8 @@
 		android:layout_height="wrap_content"
 		android:layout_marginTop="20dp"
 		android:text="@string/money"
+		android:textSize="64sp"
+		android:textStyle="bold"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toBottomOf="@+id/buttons_layout" />
@@ -87,9 +89,19 @@
 		android:layout_height="wrap_content"
 		android:layout_marginTop="20dp"
 		android:text="@string/time"
+		android:textSize="48sp"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toBottomOf="@+id/money" />
 
+	<TextView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="8dp"
+		android:text="@string/shift"
+		android:textSize="16sp"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@id/timer" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
