@@ -21,15 +21,22 @@
 			android:id="@+id/rate"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:layout_weight="1"
 			android:autofillHints="$/hour"
 			android:ems="3"
 			android:inputType="number"
 			android:maxLength="3"
 			android:text=""
 			android:textAlignment="center"
-			app:layout_constraintEnd_toEndOf="parent"
-			app:layout_constraintStart_toStartOf="parent"
 			tools:ignore="LabelFor" />
+
+		<Spinner
+			android:id="@+id/spinner"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:spinnerMode="dropdown"
+			android:textAlignment="center" />
 
 	</LinearLayout>
 
