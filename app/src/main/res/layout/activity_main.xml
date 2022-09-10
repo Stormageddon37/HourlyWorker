@@ -28,6 +28,7 @@
 			android:maxLength="3"
 			android:text=""
 			android:textAlignment="center"
+			android:textSize="16sp"
 			tools:ignore="LabelFor" />
 
 		<Spinner
@@ -36,7 +37,14 @@
 			android:layout_height="wrap_content"
 			android:layout_weight="1"
 			android:spinnerMode="dropdown"
-			android:textAlignment="center" />
+			android:textAlignment="center"
+			android:textSize="1000sp" />
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/hour"
+			android:textSize="16sp" />
 
 	</LinearLayout>
 
@@ -58,6 +66,7 @@
 			android:layout_weight="1"
 			android:enabled="false"
 			android:text="@string/reset"
+			android:textSize="16sp"
 			app:icon="@drawable/ic_baseline_stop_circle_24" />
 
 		<com.google.android.material.button.MaterialButton
@@ -67,6 +76,7 @@
 			android:layout_margin="20dp"
 			android:layout_weight="1"
 			android:text="@string/start"
+			android:textSize="16sp"
 			app:icon="@drawable/ic_baseline_play_circle_filled_24" />
 
 	</LinearLayout>
