@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 		sharedPreferences = getPreferences(MODE_PRIVATE);
-		spinner.setSelection(sharedPreferences.getInt("currency", 5));
+		spinner.setSelection(sharedPreferences.getInt("currency", 0));
 	}
 
 	private void setupHandler() {
