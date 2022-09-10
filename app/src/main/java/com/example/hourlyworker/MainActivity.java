@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
 	@SuppressLint("SetTextI18n")
 	private void setupStartStopButton() {
 		startStopButton.setOnClickListener(view -> {
+			sharedPreferences = getPreferences(MODE_PRIVATE);
 			if (isRunning) {
 				moneyEarned = 0;
 				moneySaved += getMoneyEarned();
@@ -148,6 +149,11 @@ public class MainActivity extends AppCompatActivity {
 		handler.postDelayed(new Runnable() {
 			@SuppressLint("SetTextI18n")
 			public void run() {
+				sharedPreferences = getPreferences(MODE_PRIVATE);
+				sharedPreferences.edit().putBoolean("isRunning", isRunning).apply();
+				sharedPreferences.edit().putLong("moneySaved", (long) moneySaved).apply();
+				sharedPreferences.edit().putLong("timeSaved", (long) timeSaved).apply();
+				sharedPreferences.edit().putLong("startTime", startTime).apply();
 				if (isRunning) {
 					moneyEarned = getMoneyEarned();
 					moneyView.setText(getAllMoney() + " " + spinner.getSelectedItem().toString());
@@ -165,11 +171,21 @@ public class MainActivity extends AppCompatActivity {
 		setupHandler();
 	}
 
+	@SuppressLint("SetTextI18n")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		setup();
-
+		sharedPreferences = getPreferences(MODE_PRIVATE);
+		if (sharedPreferences.getBoolean("isRunning", false)) {
+			isRunning = true;
+			moneySaved = sharedPreferences.getLong("moneySaved", 0);
+			timeSaved = sharedPreferences.getLong("timeSaved", 0);
+			startTime = sharedPreferences.getLong("startTime", 0);
+			resetButton.setEnabled(false);
+			startStopButton.setText("STOP");
+			startStopButton.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_pause_circle_filled_24));
+		}
 	}
 }
