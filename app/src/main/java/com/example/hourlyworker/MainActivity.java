@@ -30,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
 	private static long startTime;
 	private MaterialButton startStopButton, resetButton;
 	private Spinner spinner;
-	private TextView moneyView, timeView;
+	private TextView moneyView, timeView, overtimeView;
+	private RATE rate = RATE.NORMAL;
 	SharedPreferences sharedPreferences;
 	private EditText rateView;
 	private static final DecimalFormat df = new DecimalFormat("0.00");
@@ -50,12 +51,18 @@ public class MainActivity extends AppCompatActivity {
 
 	private double getMoneyEarned() {
 		long delta = System.currentTimeMillis() - startTime;
-		return delta * getMoneyPerMillisecond();
+		return delta * getMoneyPerMillisecond() * rate.getValue();
 	}
 
 	private String getAllMoney() {
 		double allMoney = Double.parseDouble(df.format(moneySaved + moneyEarned));
 		return Double.toString(allMoney);
+	}
+
+	private long getAllTime() {
+		if (!isRunning) return (long) timeSaved;
+		long delta = System.currentTimeMillis() - startTime;
+		return (long) (timeSaved + delta);
 	}
 
 	@SuppressLint("SetTextI18n")
@@ -86,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
 			timeView.setText("00:00:00");
 			startStopButton.setText("START");
 			resetButton.setEnabled(false);
+			rate = RATE.NORMAL;
+			overtimeView.setText("NORMAL (x1.0)");
 		});
 	}
 
@@ -100,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
 		moneyView = findViewById(R.id.money);
 		timeView = findViewById(R.id.timer);
 		rateView = findViewById(R.id.rate);
+		overtimeView = findViewById(R.id.overtime);
 		spinner = findViewById(R.id.spinner);
 
 		sharedPreferences = getPreferences(MODE_PRIVATE);
@@ -133,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
 				sharedPreferences.edit().putInt("currency", i).apply();
 				if (moneySaved + moneyEarned == 0) {
 					moneyView.setText(moneyView.getText().toString() + " " + spinner.getSelectedItem().toString());
-
 				} else {
 					moneyView.setText(moneyView.getText().toString().substring(0, moneyView.getText().toString().length() - 1) + spinner.getSelectedItem().toString());
 				}
@@ -154,6 +163,11 @@ public class MainActivity extends AppCompatActivity {
 		handler.postDelayed(new Runnable() {
 			@SuppressLint("SetTextI18n")
 			public void run() {
+				long x = getAllTime();
+				if (getAllTime() > 28800000)
+					rate = RATE.OVERTIME;
+				if (getAllTime() > 36000000)
+					rate = RATE.DOUBLE_OVERTIME;
 				sharedPreferences = getPreferences(MODE_PRIVATE);
 				sharedPreferences.edit().putBoolean("isRunning", isRunning).apply();
 				sharedPreferences.edit().putLong("moneySaved", (long) moneySaved).apply();
@@ -163,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
 					timeView.setText(getTimerPassed());
 					moneyEarned = getMoneyEarned();
 					moneyView.setText(getAllMoney() + " " + spinner.getSelectedItem().toString());
+					overtimeView.setText(String.valueOf(rate).replace('_', ' ') + " (x" + rate.getValue() + ")");
 				}
 				handler.postDelayed(this, delay);
 			}

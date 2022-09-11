@@ -6,6 +6,7 @@
 	<string name="reset">reset</string>
 	<string name="shift">Since your shift started</string>
 	<string name="hour">an hour</string>
+	<string name="normal">NORMAL (x1.0)</string>
 	<string-array name="currencies">
 		<item>$</item>
 		<item>₪</item>
