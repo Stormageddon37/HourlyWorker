@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 	private void setupResetButton() {
 		resetButton.setOnClickListener(view -> {
 			isRunning = false;
-			moneyView.setText("0.00");
+			moneyView.setText("0.0 " + spinner.getSelectedItem().toString());
 			moneySaved = 0;
 			moneyEarned = 0;
 			timeSaved = 0;
@@ -131,7 +131,12 @@ public class MainActivity extends AppCompatActivity {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 				sharedPreferences.edit().putInt("currency", i).apply();
-				moneyView.setText(moneyView.getText().toString().substring(0, moneyView.getText().toString().length() - 1) + spinner.getSelectedItem().toString());
+				if (moneySaved + moneyEarned == 0) {
+					moneyView.setText(moneyView.getText().toString() + " " + spinner.getSelectedItem().toString());
+
+				} else {
+					moneyView.setText(moneyView.getText().toString().substring(0, moneyView.getText().toString().length() - 1) + spinner.getSelectedItem().toString());
+				}
 			}
 
 			@Override
@@ -155,9 +160,9 @@ public class MainActivity extends AppCompatActivity {
 				sharedPreferences.edit().putLong("timeSaved", (long) timeSaved).apply();
 				sharedPreferences.edit().putLong("startTime", startTime).apply();
 				if (isRunning) {
+					timeView.setText(getTimerPassed());
 					moneyEarned = getMoneyEarned();
 					moneyView.setText(getAllMoney() + " " + spinner.getSelectedItem().toString());
-					timeView.setText(getTimerPassed());
 				}
 				handler.postDelayed(this, delay);
 			}
