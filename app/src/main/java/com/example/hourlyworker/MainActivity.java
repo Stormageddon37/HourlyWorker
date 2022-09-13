@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 	private static long startTime;
 	private MaterialButton startStopButton, resetButton;
 	private Spinner spinner;
-	private TextView moneyView, timeView, overtimeView;
+	private TextView moneyView, timeView, overtimeView, currencyView;
 	private RATE rate = RATE.NORMAL;
 	SharedPreferences sharedPreferences;
 	private EditText rateView;
@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
 			startTime = System.currentTimeMillis();
 			isRunning = !isRunning;
 			startStopButton.setText(isRunning ? "STOP" : "RESUME");
+			currencyView.setText(getCurrency());
 			startStopButton.setIcon(isRunning ? ContextCompat.getDrawable(this, R.drawable.ic_baseline_pause_circle_filled_24) : ContextCompat.getDrawable(this, R.drawable.ic_baseline_play_circle_filled_24));
 			resetButton.setEnabled(!isRunning);
 		});
@@ -86,7 +87,8 @@ public class MainActivity extends AppCompatActivity {
 	private void setupResetButton() {
 		resetButton.setOnClickListener(view -> {
 			isRunning = false;
-			moneyView.setText("0.0 " + spinner.getSelectedItem().toString());
+			moneyView.setText("0.0");
+			currencyView.setText(getCurrency());
 			moneySaved = 0;
 			moneyEarned = 0;
 			timeSaved = 0;
@@ -96,6 +98,10 @@ public class MainActivity extends AppCompatActivity {
 			rate = RATE.NORMAL;
 			overtimeView.setText("NORMAL (x1.0)");
 		});
+	}
+
+	private String getCurrency() {
+		return " " + spinner.getSelectedItem().toString();
 	}
 
 	private void setupButtons() {
@@ -109,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
 		moneyView = findViewById(R.id.money);
 		timeView = findViewById(R.id.timer);
 		rateView = findViewById(R.id.rate);
+		currencyView = findViewById(R.id.currency);
 		overtimeView = findViewById(R.id.overtime);
 		spinner = findViewById(R.id.spinner);
 
@@ -141,11 +148,7 @@ public class MainActivity extends AppCompatActivity {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 				sharedPreferences.edit().putInt("currency", i).apply();
-				if (moneySaved + moneyEarned == 0) {
-					moneyView.setText(moneyView.getText().toString() + " " + spinner.getSelectedItem().toString());
-				} else {
-					moneyView.setText(moneyView.getText().toString().substring(0, moneyView.getText().toString().length() - 1) + spinner.getSelectedItem().toString());
-				}
+				currencyView.setText(getCurrency());
 			}
 
 			@Override
@@ -157,13 +160,18 @@ public class MainActivity extends AppCompatActivity {
 		spinner.setSelection(sharedPreferences.getInt("currency", 0));
 	}
 
+	private String getRateString() {
+		return String.valueOf(rate).replace('_', ' ') + " (x" + rate.getValue() + ")";
+	}
+
+
 	private void setupHandler() {
 		Handler handler = new Handler();
 		int delay = 1;
 		handler.postDelayed(new Runnable() {
 			@SuppressLint("SetTextI18n")
 			public void run() {
-				long x = getAllTime();
+				currencyView.setText(getCurrency());
 				if (getAllTime() > 28800000)
 					rate = RATE.OVERTIME;
 				if (getAllTime() > 36000000)
@@ -176,8 +184,8 @@ public class MainActivity extends AppCompatActivity {
 				if (isRunning) {
 					timeView.setText(getTimerPassed());
 					moneyEarned = getMoneyEarned();
-					moneyView.setText(getAllMoney() + " " + spinner.getSelectedItem().toString());
-					overtimeView.setText(String.valueOf(rate).replace('_', ' ') + " (x" + rate.getValue() + ")");
+					moneyView.setText(getAllMoney());
+					overtimeView.setText(getRateString());
 				}
 				handler.postDelayed(this, delay);
 			}
@@ -189,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
 		setupDropdown();
 		setupButtons();
 		setupHandler();
+		currencyView.setText(getCurrency());
 	}
 
 	@SuppressLint("SetTextI18n")

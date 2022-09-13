@@ -7,7 +7,7 @@
 	tools:context=".MainActivity">
 
 	<LinearLayout
-		android:id="@+id/money_layout"
+		android:id="@+id/rate_layout"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginTop="100dp"
@@ -57,7 +57,7 @@
 		android:textStyle="bold"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintTop_toBottomOf="@id/money_layout" />
+		app:layout_constraintTop_toBottomOf="@id/rate_layout" />
 
 	<LinearLayout
 		android:id="@+id/buttons_layout"
@@ -93,17 +93,32 @@
 	</LinearLayout>
 
 
-	<TextView
-		android:id="@+id/money"
+	<LinearLayout
+		android:id="@+id/money_layout"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_marginTop="32dp"
-		android:text="@string/money"
-		android:textSize="64sp"
-		android:textStyle="bold"
+		android:orientation="horizontal"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintTop_toBottomOf="@+id/buttons_layout" />
+		app:layout_constraintTop_toBottomOf="@+id/buttons_layout">
+
+		<TextView
+			android:id="@+id/money"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/money"
+			android:textSize="64sp"
+			android:textStyle="bold" />
+
+		<TextView
+			android:id="@+id/currency"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:maxLength="2"
+			android:text=""
+			android:textSize="64sp"
+			android:textStyle="bold" />
+	</LinearLayout>
 
 	<TextView
 		android:id="@+id/timer"
@@ -114,7 +129,7 @@
 		android:textSize="48sp"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintTop_toBottomOf="@+id/money" />
+		app:layout_constraintTop_toBottomOf="@+id/money_layout" />
 
 	<TextView
 		android:layout_width="wrap_content"
