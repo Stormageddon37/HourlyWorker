@@ -44,8 +44,13 @@ public class MainActivity extends AppCompatActivity {
 		return String.valueOf(rate).replace('_', ' ') + " (x" + rate.getValue() + ")";
 	}
 
-	private String getCurrency() {
+	private String getCurrencyString() {
 		return " " + spinner.getSelectedItem().toString();
+	}
+
+	private String getAllMoneyString() {
+		double allMoney = Double.parseDouble(df.format(moneySaved + moneyEarned));
+		return Double.toString(allMoney);
 	}
 
 	private double getMoneyPerMillisecond() {
@@ -57,11 +62,6 @@ public class MainActivity extends AppCompatActivity {
 	private double getMoneyEarned() {
 		long delta = System.currentTimeMillis() - startTime;
 		return delta * getMoneyPerMillisecond() * rate.getValue();
-	}
-
-	private String getAllMoney() {
-		double allMoney = Double.parseDouble(df.format(moneySaved + moneyEarned));
-		return Double.toString(allMoney);
 	}
 
 	private void resetMoney() {
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 			startTime = System.currentTimeMillis();
 			isRunning = !isRunning;
 			startStopButton.setText(isRunning ? "STOP" : "RESUME");
-			currencyView.setText(getCurrency());
+			currencyView.setText(getCurrencyString());
 			startStopButton.setIcon(isRunning ? ContextCompat.getDrawable(this, R.drawable.ic_baseline_pause_circle_filled_24) : ContextCompat.getDrawable(this, R.drawable.ic_baseline_play_circle_filled_24));
 			resetButton.setEnabled(!isRunning);
 		});
@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 		resetButton.setOnClickListener(view -> {
 			isRunning = false;
 			moneyView.setText("0.0");
-			currencyView.setText(getCurrency());
+			currencyView.setText(getCurrencyString());
 			moneySaved = 0;
 			moneyEarned = 0;
 			timeSaved = 0;
@@ -120,6 +120,59 @@ public class MainActivity extends AppCompatActivity {
 	private void setupButtons() {
 		setupStartStopButton();
 		setupResetButton();
+	}
+
+	private void setupDropdown() {
+		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.currencies, android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+		spinner.setAdapter(adapter);
+		sharedPreferences = getPreferences(MODE_PRIVATE);
+		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@SuppressLint("SetTextI18n")
+			@Override
+			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+				sharedPreferences.edit().putInt("currency", i).apply();
+				currencyView.setText(getCurrencyString());
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> adapterView) {
+
+			}
+		});
+		sharedPreferences = getPreferences(MODE_PRIVATE);
+		spinner.setSelection(sharedPreferences.getInt("currency", 0));
+	}
+
+	private void setupHandler() {
+		Handler handler = new Handler();
+		int delay = 1;
+		handler.postDelayed(new Runnable() {
+			@SuppressLint("SetTextI18n")
+			public void run() {
+				currencyView.setText(getCurrencyString());
+				if (getAllTime() >= OVERTIME_MIN_MILLIS && rate == RATE.NORMAL) {
+					resetMoney();
+					rate = RATE.OVERTIME;
+				}
+				if (getAllTime() >= DOUBLE_OVERTIME_MIN_MILLIS && rate == RATE.OVERTIME) {
+					resetMoney();
+					rate = RATE.DOUBLE_OVERTIME;
+				}
+				sharedPreferences = getPreferences(MODE_PRIVATE);
+				sharedPreferences.edit().putBoolean("isRunning", isRunning).apply();
+				sharedPreferences.edit().putLong("moneySaved", (long) moneySaved).apply();
+				sharedPreferences.edit().putLong("timeSaved", (long) timeSaved).apply();
+				sharedPreferences.edit().putLong("startTime", startTime).apply();
+				if (isRunning) {
+					moneyEarned = getMoneyEarned();
+					timeView.setText(getTimerPassed());
+					moneyView.setText(getAllMoneyString());
+					overtimeView.setText(getRateString());
+				}
+				handler.postDelayed(this, delay);
+			}
+		}, delay);
 	}
 
 	private void findViews() {
@@ -151,65 +204,12 @@ public class MainActivity extends AppCompatActivity {
 		rateView.setText(sharedPreferences.getString("hourlyRate", "50"));
 	}
 
-	private void setupDropdown() {
-		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.currencies, android.R.layout.simple_spinner_item);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
-		spinner.setAdapter(adapter);
-		sharedPreferences = getPreferences(MODE_PRIVATE);
-		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@SuppressLint("SetTextI18n")
-			@Override
-			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-				sharedPreferences.edit().putInt("currency", i).apply();
-				currencyView.setText(getCurrency());
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> adapterView) {
-
-			}
-		});
-		sharedPreferences = getPreferences(MODE_PRIVATE);
-		spinner.setSelection(sharedPreferences.getInt("currency", 0));
-	}
-
-	private void setupHandler() {
-		Handler handler = new Handler();
-		int delay = 1;
-		handler.postDelayed(new Runnable() {
-			@SuppressLint("SetTextI18n")
-			public void run() {
-				currencyView.setText(getCurrency());
-				if (getAllTime() >= OVERTIME_MIN_MILLIS && rate == RATE.NORMAL) {
-					resetMoney();
-					rate = RATE.OVERTIME;
-				}
-				if (getAllTime() >= DOUBLE_OVERTIME_MIN_MILLIS && rate == RATE.OVERTIME) {
-					resetMoney();
-					rate = RATE.DOUBLE_OVERTIME;
-				}
-				sharedPreferences = getPreferences(MODE_PRIVATE);
-				sharedPreferences.edit().putBoolean("isRunning", isRunning).apply();
-				sharedPreferences.edit().putLong("moneySaved", (long) moneySaved).apply();
-				sharedPreferences.edit().putLong("timeSaved", (long) timeSaved).apply();
-				sharedPreferences.edit().putLong("startTime", startTime).apply();
-				if (isRunning) {
-					moneyEarned = getMoneyEarned();
-					timeView.setText(getTimerPassed());
-					moneyView.setText(getAllMoney());
-					overtimeView.setText(getRateString());
-				}
-				handler.postDelayed(this, delay);
-			}
-		}, delay);
-	}
-
 	private void setup() {
 		findViews();
 		setupDropdown();
 		setupButtons();
 		setupHandler();
-		currencyView.setText(getCurrency());
+		currencyView.setText(getCurrencyString());
 	}
 
 	@SuppressLint("SetTextI18n")
