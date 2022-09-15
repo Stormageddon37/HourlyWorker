@@ -28,19 +28,24 @@ public class MainActivity extends AppCompatActivity {
 	private static double moneySaved = 0;
 	private static double timeSaved = 0;
 	private static long startTime;
-	private MaterialButton startStopButton, resetButton;
-	private Spinner spinner;
-	private TextView moneyView, timeView, overtimeView, currencyView;
-	private RATE rate = RATE.NORMAL;
-	SharedPreferences sharedPreferences;
-	private EditText rateView;
-	private static final DecimalFormat df = new DecimalFormat("0.00");
 
-	@SuppressLint("DefaultLocale")
-	private String getTimerPassed() {
-		long delta = System.currentTimeMillis() - startTime;
-		delta += timeSaved;
-		return String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(delta), TimeUnit.MILLISECONDS.toMinutes(delta) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(delta)), TimeUnit.MILLISECONDS.toSeconds(delta) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(delta)));
+	private TextView moneyView, timeView, overtimeView, currencyView;
+	private MaterialButton startStopButton, resetButton;
+	private SharedPreferences sharedPreferences;
+	private EditText rateView;
+	private Spinner spinner;
+
+	private static RATE rate = RATE.NORMAL;
+	private static final DecimalFormat df = new DecimalFormat("0.00");
+	private static final int OVERTIME_MIN_MILLIS = 28800000; //8 hours in milliseconds
+	private static final int DOUBLE_OVERTIME_MIN_MILLIS = 36000000; //10 hours in milliseconds
+	
+	private String getRateString() {
+		return String.valueOf(rate).replace('_', ' ') + " (x" + rate.getValue() + ")";
+	}
+
+	private String getCurrency() {
+		return " " + spinner.getSelectedItem().toString();
 	}
 
 	private double getMoneyPerMillisecond() {
@@ -59,10 +64,22 @@ public class MainActivity extends AppCompatActivity {
 		return Double.toString(allMoney);
 	}
 
+	private void resetMoney() {
+		moneySaved += moneyEarned;
+		moneyEarned = 0;
+	}
+
 	private long getAllTime() {
 		if (!isRunning) return (long) timeSaved;
 		long delta = System.currentTimeMillis() - startTime;
 		return (long) (timeSaved + delta);
+	}
+
+	@SuppressLint("DefaultLocale")
+	private String getTimerPassed() {
+		long delta = System.currentTimeMillis() - startTime;
+		delta += timeSaved;
+		return String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(delta), TimeUnit.MILLISECONDS.toMinutes(delta) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(delta)), TimeUnit.MILLISECONDS.toSeconds(delta) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(delta)));
 	}
 
 	@SuppressLint("SetTextI18n")
@@ -98,10 +115,6 @@ public class MainActivity extends AppCompatActivity {
 			rate = RATE.NORMAL;
 			overtimeView.setText("NORMAL (x1.0)");
 		});
-	}
-
-	private String getCurrency() {
-		return " " + spinner.getSelectedItem().toString();
 	}
 
 	private void setupButtons() {
@@ -160,11 +173,6 @@ public class MainActivity extends AppCompatActivity {
 		spinner.setSelection(sharedPreferences.getInt("currency", 0));
 	}
 
-	private String getRateString() {
-		return String.valueOf(rate).replace('_', ' ') + " (x" + rate.getValue() + ")";
-	}
-
-
 	private void setupHandler() {
 		Handler handler = new Handler();
 		int delay = 1;
@@ -172,18 +180,22 @@ public class MainActivity extends AppCompatActivity {
 			@SuppressLint("SetTextI18n")
 			public void run() {
 				currencyView.setText(getCurrency());
-				if (getAllTime() > 28800000)
+				if (getAllTime() >= OVERTIME_MIN_MILLIS && rate == RATE.NORMAL) {
+					resetMoney();
 					rate = RATE.OVERTIME;
-				if (getAllTime() > 36000000)
+				}
+				if (getAllTime() >= DOUBLE_OVERTIME_MIN_MILLIS && rate == RATE.OVERTIME) {
+					resetMoney();
 					rate = RATE.DOUBLE_OVERTIME;
+				}
 				sharedPreferences = getPreferences(MODE_PRIVATE);
 				sharedPreferences.edit().putBoolean("isRunning", isRunning).apply();
 				sharedPreferences.edit().putLong("moneySaved", (long) moneySaved).apply();
 				sharedPreferences.edit().putLong("timeSaved", (long) timeSaved).apply();
 				sharedPreferences.edit().putLong("startTime", startTime).apply();
 				if (isRunning) {
-					timeView.setText(getTimerPassed());
 					moneyEarned = getMoneyEarned();
+					timeView.setText(getTimerPassed());
 					moneyView.setText(getAllMoney());
 					overtimeView.setText(getRateString());
 				}
