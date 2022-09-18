@@ -60,13 +60,28 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private double getMoneyEarned() {
-		long delta = System.currentTimeMillis() - startTime;
-		return delta * getMoneyPerMillisecond() * rate.getValue();
-	}
+		//TODO: cleanup
+		long timePassed = System.currentTimeMillis() - startTime;
+		if (timePassed > DOUBLE_OVERTIME_MIN_MILLIS) {
+			long normal_time = OVERTIME_MIN_MILLIS;
+			long over_time = DOUBLE_OVERTIME_MIN_MILLIS - OVERTIME_MIN_MILLIS;
+			long double_over_time = timePassed - normal_time - over_time;
 
-	private void resetMoney() {
-		moneySaved += moneyEarned;
-		moneyEarned = 0;
+			double normal_time_money = normal_time * getMoneyPerMillisecond() * RATE.NORMAL.getValue();
+			double over_time_money = over_time * getMoneyPerMillisecond() * RATE.OVERTIME.getValue();
+			double double_over_time_money = double_over_time * getMoneyPerMillisecond() * RATE.DOUBLE_OVERTIME.getValue();
+
+			return normal_time_money + over_time_money + double_over_time_money;
+		} else if (timePassed > OVERTIME_MIN_MILLIS) {
+			long normal_time = OVERTIME_MIN_MILLIS;
+			long over_time = timePassed - normal_time;
+
+			double normal_time_money = normal_time * getMoneyPerMillisecond() * RATE.NORMAL.getValue();
+			double over_time_money = over_time * getMoneyPerMillisecond() * RATE.OVERTIME.getValue();
+
+			return normal_time_money + over_time_money;
+		}
+		return timePassed * getMoneyPerMillisecond() * RATE.NORMAL.getValue();
 	}
 
 	private long getAllTime() {
@@ -151,13 +166,12 @@ public class MainActivity extends AppCompatActivity {
 			@SuppressLint("SetTextI18n")
 			public void run() {
 				currencyView.setText(getCurrencyString());
-				if (getAllTime() >= OVERTIME_MIN_MILLIS && rate == RATE.NORMAL) {
-					resetMoney();
-					rate = RATE.OVERTIME;
-				}
-				if (getAllTime() >= DOUBLE_OVERTIME_MIN_MILLIS && rate == RATE.OVERTIME) {
-					resetMoney();
+				if (getAllTime() >= DOUBLE_OVERTIME_MIN_MILLIS) {
 					rate = RATE.DOUBLE_OVERTIME;
+				} else if (getAllTime() >= OVERTIME_MIN_MILLIS) {
+					rate = RATE.OVERTIME;
+				} else {
+					rate = RATE.NORMAL;
 				}
 				sharedPreferences = getPreferences(MODE_PRIVATE);
 				sharedPreferences.edit().putBoolean("isRunning", isRunning).apply();
