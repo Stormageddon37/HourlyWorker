@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -144,7 +145,12 @@ public class MainActivity extends AppCompatActivity {
 			calendar.set(Calendar.MINUTE, minute);
 
 			resetSession();
-			startTime = calendar.getTime().getTime();
+			long selectedTime = calendar.getTime().getTime();
+			if (selectedTime > System.currentTimeMillis()) {
+				Toast.makeText(this, "Cannot start a shift in the future", Toast.LENGTH_SHORT).show();
+				return;
+			}
+			startTime = selectedTime;
 			isRunning = true;
 			startStopButton.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_pause_circle_filled_24));
 			currencyView.setText(getCurrencyString());
@@ -154,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
 		new TimePickerDialog(MainActivity.this, timeSetListener, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
 	}
-	
+
 	private void setupBackdateTimeButton() {
 		timeView.setOnLongClickListener(view -> {
 			if (isRunning) return true;
