@@ -1,6 +1,7 @@
 package com.example.hourlyworker;
 
 import android.annotation.SuppressLint;
+import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.button.MaterialButton;
 
 import java.text.DecimalFormat;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -39,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 	private static final DecimalFormat df = new DecimalFormat("0.00");
 	private static final int OVERTIME_MIN_MILLIS = 28800000; //8 hours in milliseconds
 	private static final int DOUBLE_OVERTIME_MIN_MILLIS = 36000000; //10 hours in milliseconds
-	
+
 	private String getRateString() {
 		return String.valueOf(rate).replace('_', ' ') + " (x" + rate.getValue() + ")";
 	}
@@ -115,26 +117,56 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
-	@SuppressLint("SetTextI18n")
 	private void setupResetButton() {
-		resetButton.setOnClickListener(view -> {
-			isRunning = false;
-			moneyView.setText("0.0");
+		resetButton.setOnClickListener(view -> resetSession());
+	}
+
+	@SuppressLint("SetTextI18n")
+	private void resetSession() {
+		isRunning = false;
+		moneyView.setText("0.0");
+		currencyView.setText(getCurrencyString());
+		moneySaved = 0;
+		moneyEarned = 0;
+		timeSaved = 0;
+		timeView.setText("00:00:00");
+		startStopButton.setText("START");
+		resetButton.setEnabled(false);
+		rate = RATE.NORMAL;
+		overtimeView.setText("NORMAL (x1.0)");
+	}
+
+	private void showTimeDialog() {
+		final Calendar calendar = Calendar.getInstance();
+
+		@SuppressLint("SetTextI18n") TimePickerDialog.OnTimeSetListener timeSetListener = (view, hourOfDay, minute) -> {
+			calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+			calendar.set(Calendar.MINUTE, minute);
+
+			resetSession();
+			startTime = calendar.getTime().getTime();
+			isRunning = true;
+			startStopButton.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_pause_circle_filled_24));
 			currencyView.setText(getCurrencyString());
-			moneySaved = 0;
-			moneyEarned = 0;
-			timeSaved = 0;
-			timeView.setText("00:00:00");
-			startStopButton.setText("START");
+			startStopButton.setText("STOP");
 			resetButton.setEnabled(false);
-			rate = RATE.NORMAL;
-			overtimeView.setText("NORMAL (x1.0)");
+		};
+
+		new TimePickerDialog(MainActivity.this, timeSetListener, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
+	}
+	
+	private void setupBackdateTimeButton() {
+		timeView.setOnLongClickListener(view -> {
+			if (isRunning) return true;
+			showTimeDialog();
+			return true;
 		});
 	}
 
 	private void setupButtons() {
 		setupStartStopButton();
 		setupResetButton();
+		setupBackdateTimeButton();
 	}
 
 	private void setupDropdown() {
